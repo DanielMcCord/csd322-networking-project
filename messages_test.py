@@ -43,10 +43,12 @@ class TestGetWorkRequest(unittest.TestCase):
         request = GetWorkRequest()
 
         serialized = request.serialize()
-        # TODO: validate
+        if serialized != "REQWORK":
+            self.fail()
 
         deserialized = GetWorkRequest.deserialize(StringIO(serialized))
-        # TODO: validate
+        if type(deserialized) != GetWorkRequest:
+            self.fail()
     
     def test_invalid_deserialize(self):
         try:
