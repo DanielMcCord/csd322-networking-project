@@ -24,6 +24,17 @@ class Message():
 
         raise NotImplementedError
 
+    def deserialize(msg: TextIOBase):
+        """
+        Parses the specified msg and returns its deserialized Message object (or
+        raises a ValueException if the msg is not a valid serialization).
+        """
+
+        firstline = msg.readline()
+        if firstline.startswith("GET "):
+            return HTTPGetRequest.deserialize(firstline, msg)
+        raise ValueError
+
 class HTTPGetRequest(Message):
     """
     Message used by a Volunteer to request the text of a particular play from
@@ -47,18 +58,18 @@ class HTTPGetRequest(Message):
         result += "\r\n"
         return result 
     
-    def deserialize(msg: TextIOBase) -> Message:
+    def deserialize(firstline: str, rest: TextIOBase) -> Message:
         """
-        Parses the specified msg and returns an HTTPGetRequest (or raises a 
-        ValueException if the msg is not a valid serialized HTTPGetRequest).
+        Parses the specified firstline and rest (of message) and returns an
+        HTTPGetRequest (or raises a ValueException if the msg is not a valid
+        serialized HTTPGetRequest).
         This is a class method i.e. associated with the class rather than
         instances of the class. 
         """
 
-        line = msg.readline()
-        if line.startswith("GET "):
-            [_, path, _] = line.split()
-            line = msg.readline()
+        if firstline.startswith("GET "):
+            [_, path, _] = firstline.split()
+            line = rest.readline()
             [name, value] = line.split()
             if name == "Host:":
                 return HTTPGetRequest(value, path)
@@ -71,10 +82,11 @@ class GetWorkRequest(Message):
 
     # TODO: override serialize().
     
-    def deserialize(msg: TextIOBase) -> Message:
+    def deserialize(firstline: str, rest: TextIOBase) -> Message:
         """
-        Parses the specified msg and returns a a GetWorkRequest (or raises a 
-        ValueException if the msg is not a valid serialized GetWorkRequest).
+        Parses the specified firstline and rest (of message) and returns a
+        GetWorkRequest (or raises a ValueException if the msg is not a valid
+        serialized GetWorkRequest).
         """
 
         # TODO: implement this.
@@ -99,10 +111,11 @@ class GetWorkResponse(Message):
 
     # TODO: override serialize().
     
-    def deserialize(msg: TextIOBase) -> Message:
+    def deserialize(firstline: str, rest: TextIOBase) -> Message:
         """
-        Parses the specified msg and returns a a GetWorkResponse (or raises a 
-        ValueException if the msg is not a valid serialized GetWorkResponse).
+        Parses the specified firstline and rest (of message) and returns a
+        GetWorkResponse (or raises a ValueException if the msg is not a valid
+        serialized GetWorkResponse).
         """
 
         # TODO: implement this.
@@ -127,10 +140,11 @@ class WorkCompleteRequest(Message):
 
     # TODO: override serialize().
     
-    def deserialize(msg: TextIOBase) -> Message:
+    def deserialize(firstline: str, rest: TextIOBase) -> Message:
         """
-        Parses the specified msg and returns a a WorkCompleteRequest (or raises a 
-        ValueException if the msg is not a valid serialized WorkCompleteRequest).
+        Parses the specified firstline and rest (of message) and returns a
+        WorkCompleteRequest (or raises a ValueException if the msg is not a
+        valid serialized WorkCompleteRequest).
         """
 
         # TODO: implement this.
@@ -144,11 +158,11 @@ class WorkCompleteResponse(Message):
 
     # TODO: override serialize().
     
-    def deserialize(msg: TextIOBase) -> Message:
+    def deserialize(firstline: str, rest: TextIOBase) -> Message:
         """
-        Parses the specified msg and returns a a WorkCompleteResponse (or
-        raises a ValueException if the msg is not a valid serialized
-        WorkCompleteResponse).
+        Parses the specified firstline and rest (of message) and returns a
+        WorkCompleteResponse (or raises a ValueException if the msg is not a
+        valid serialized WorkCompleteResponse).
         """
         
         # TODO: implement this.

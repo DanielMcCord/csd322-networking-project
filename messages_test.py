@@ -4,6 +4,15 @@ from io import *
 from messages import *
 import unittest
 
+class TestMessage(unittest.TestCase):
+
+    def test_invalid_deserialize(self):
+        try:
+           deserialized = Message.deserialize(StringIO("bogus msg"))
+           self.fail("Expected ValueError") 
+        except(ValueError):
+            pass
+
 class TestHTTPGetRequest(unittest.TestCase):
 
     def test_serialize_deserialize(self):
@@ -21,21 +30,10 @@ class TestHTTPGetRequest(unittest.TestCase):
         expected_serialized += "\r\n"
         self.assertEqual(serialized, expected_serialized)
 
-        deserialized = HTTPGetRequest.deserialize(StringIO(serialized))
+        deserialized = Message.deserialize(StringIO(serialized))
+        self.assertIsInstance(deserialized, HTTPGetRequest)
         self.assertEqual(deserialized.host, "some-host")
         self.assertEqual(deserialized.path, "some-path")
-    
-    def test_invalid_deserialize(self):
-        """
-        Tests that an invalid message on the wire raises an exception when
-        deserialized.
-        """
-        
-        try:
-           deserialized = HTTPGetRequest.deserialize(StringIO("bogus msg"))
-           self.fail("Expected ValueError") 
-        except(ValueError):
-            pass
 
 class TestGetWorkRequest(unittest.TestCase):
 
@@ -46,14 +44,8 @@ class TestGetWorkRequest(unittest.TestCase):
         # TODO: validate
 
         deserialized = GetWorkRequest.deserialize(StringIO(serialized))
+        self.assertIsInstance(deserialized, GetWorkRequest)
         # TODO: validate
-    
-    def test_invalid_deserialize(self):
-        try:
-           deserialized = GetWorkRequest.deserialize(StringIO("bogus msg"))
-           self.fail("Expected ValueError") 
-        except(ValueError):
-            pass
 
 class TestGetWorkResponse(unittest.TestCase):
 
@@ -64,16 +56,10 @@ class TestGetWorkResponse(unittest.TestCase):
         # TODO: validate
 
         deserialized = GetWorkResponse.deserialize(StringIO(serialized))
+        self.assertIsInstance(deserialized, GetWorkResponse)
         # TODO: validate
 
     # TODO: also validate the case of no work left
-    
-    def test_invalid_deserialize(self):
-        try:
-           deserialized = GetWorkResponse.deserialize(StringIO("bogus msg"))
-           self.fail("Expected ValueError") 
-        except(ValueError):
-            pass
 
 class TestWorkCompleteRequest(unittest.TestCase):
 
@@ -85,14 +71,8 @@ class TestWorkCompleteRequest(unittest.TestCase):
         # TODO: validate
 
         deserialized = WorkCompleteRequest.deserialize(StringIO(serialized))
+        self.assertIsInstance(deserialized, WorkCompleteRequest)
         # TODO: validate
-    
-    def test_invalid_deserialize(self):
-        try:
-           deserialized = WorkCompleteRequest.deserialize(StringIO("bogus msg"))
-           self.fail("Expected ValueError") 
-        except(ValueError):
-            pass
 
 class TestWorkCompleteResponse(unittest.TestCase):
 
@@ -103,14 +83,8 @@ class TestWorkCompleteResponse(unittest.TestCase):
         # TODO: validate
 
         deserialized = WorkCompleteResponse.deserialize(StringIO(serialized))
+        self.assertIsInstance(deserialized, WorkCompleteResponse)
         # TODO: validate
-    
-    def test_invalid_deserialize(self):
-        try:
-           deserialized = WorkCompleteResponse.deserialize(StringIO("bogus msg"))
-           self.fail("Expected ValueError") 
-        except(ValueError):
-            pass
 
 if __name__ == '__main__':
     unittest.main()
