@@ -80,7 +80,8 @@ class GetWorkRequest(Message):
     Message sent by a Volunteer to the Coordinator to ask for work.
     """
 
-    # TODO: override serialize().
+    def serialize(self) -> str:
+        return "REQWORK"
     
     def deserialize(firstline: str, rest: TextIOBase) -> Message:
         """
@@ -90,7 +91,8 @@ class GetWorkRequest(Message):
         """
 
         # TODO: implement this.
-        raise NotImplementedError
+        if msg != "REQWORK": raise ValueError
+        return GetWorkRequest()
 
 class GetWorkResponse(Message):
     """
