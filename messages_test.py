@@ -1,17 +1,19 @@
 """Tests for messages.py."""
 
-from io import *
-from messages import *
 import unittest
+
+from messages import *
+
 
 class TestMessage(unittest.TestCase):
 
     def test_invalid_deserialize(self):
         try:
-           deserialized = Message.deserialize(StringIO("bogus msg"))
-           self.fail("Expected ValueError") 
-        except(ValueError):
+            Message.deserialize(StringIO("bogus msg"))
+            self.fail("Expected ValueError")
+        except ValueError:
             pass
+
 
 class TestHTTPGetRequest(unittest.TestCase):
 
@@ -25,9 +27,9 @@ class TestHTTPGetRequest(unittest.TestCase):
         request = HTTPGetRequest("some-host", "some-path")
 
         serialized = request.serialize()
-        expected_serialized = "GET some-path HTTP/1.1\r\n"
-        expected_serialized += "Host: some-host\r\n"
-        expected_serialized += "\r\n"
+        expected_serialized = ("GET some-path HTTP/1.1\r\n"
+                               "Host: some-host\r\n"
+                               "\r\n")
         self.assertEqual(serialized, expected_serialized)
 
         deserialized = Message.deserialize(StringIO(serialized))
@@ -35,18 +37,20 @@ class TestHTTPGetRequest(unittest.TestCase):
         self.assertEqual(deserialized.host, "some-host")
         self.assertEqual(deserialized.path, "some-path")
 
+
 class TestGetWorkRequest(unittest.TestCase):
 
     def test_serialize_deserialize(self):
         request = GetWorkRequest()
 
         serialized = request.serialize()
-        if serialized != "REQWORK":
-            self.fail()
+        expected_serialized = ("ReqW\r\n"
+                               "\r\n")
+        self.assertEqual(serialized, expected_serialized)
 
-        deserialized = GetWorkRequest.deserialize(StringIO(serialized))
+        deserialized = Message.deserialize(StringIO(serialized))
         self.assertIsInstance(deserialized, GetWorkRequest)
-        # TODO: validate
+
 
 class TestGetWorkResponse(unittest.TestCase):
 
@@ -54,13 +58,32 @@ class TestGetWorkResponse(unittest.TestCase):
         request = GetWorkResponse("some-host", "some-path")
 
         serialized = request.serialize()
-        # TODO: validate
+        expected_serialized = ("AsgW\r\n"
+                               "Host: some-host\r\n"
+                               "Path: some-path\r\n"
+                               "\r\n")
+        self.assertEqual(serialized, expected_serialized)
 
-        deserialized = GetWorkResponse.deserialize(StringIO(serialized))
+        deserialized = Message.deserialize(StringIO(serialized))
         self.assertIsInstance(deserialized, GetWorkResponse)
-        # TODO: validate
+        self.assertEqual(deserialized.host, "some-host")
+        self.assertEqual(deserialized.path, "some-path")
 
-    # TODO: also validate the case of no work left
+    def test_serialize_deserialize_no_work_left(self):
+        request = GetWorkResponse("", "")
+
+        serialized = request.serialize()
+        expected_serialized = ("AsgW\r\n"
+                               "Host: \r\n"
+                               "Path: \r\n"
+                               "\r\n")
+        self.assertEqual(serialized, expected_serialized)
+
+        deserialized = Message.deserialize(StringIO(serialized))
+        self.assertIsInstance(deserialized, GetWorkResponse)
+        self.assertEqual(deserialized.host, "")
+        self.assertEqual(deserialized.path, "")
+
 
 class TestWorkCompleteRequest(unittest.TestCase):
 
@@ -69,11 +92,20 @@ class TestWorkCompleteRequest(unittest.TestCase):
                                       {"romeo": 16, "juliet": 18, "rose": 7})
 
         serialized = request.serialize()
-        # TODO: validate
+        expected_serialized = ("SubW\r\n"
+                               "Path: path-to-play\r\n"
+                               "Word-Counts:\r\n"
+                               "romeo 16\r\n"
+                               "juliet 18\r\n"
+                               "rose 7\r\n"
+                               "\r\n")
+        self.assertEqual(serialized, expected_serialized)
 
-        deserialized = WorkCompleteRequest.deserialize(StringIO(serialized))
+        deserialized = Message.deserialize(StringIO(serialized))
         self.assertIsInstance(deserialized, WorkCompleteRequest)
-        # TODO: validate
+        self.assertEqual(deserialized.path, "path-to-play")
+        self.assertEqual(deserialized.word_counts, {"romeo": 16, "juliet": 18, "rose": 7})
+
 
 class TestWorkCompleteResponse(unittest.TestCase):
 
@@ -81,11 +113,13 @@ class TestWorkCompleteResponse(unittest.TestCase):
         request = WorkCompleteResponse()
 
         serialized = request.serialize()
-        # TODO: validate
+        expected_serialized = ("AckW\r\n"
+                               "\r\n")
+        self.assertEqual(serialized, expected_serialized)
 
-        deserialized = WorkCompleteResponse.deserialize(StringIO(serialized))
+        deserialized = Message.deserialize(StringIO(serialized))
         self.assertIsInstance(deserialized, WorkCompleteResponse)
-        # TODO: validate
+
 
 if __name__ == '__main__':
     unittest.main()
