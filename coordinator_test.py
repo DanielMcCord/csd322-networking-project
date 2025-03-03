@@ -4,6 +4,7 @@ from socket import *
 import threading
 import unittest
 
+
 class TestCoordinator(unittest.TestCase):
     """
     This test case starts a Coordinator server in another thread and runs tests
@@ -14,7 +15,7 @@ class TestCoordinator(unittest.TestCase):
         """
         Starts the Coordinator server on another thread.
         """
-        
+
         coordinator = Coordinator()
         self.port = coordinator.start(0)
         print("port: %d" % self.port)
@@ -22,7 +23,7 @@ class TestCoordinator(unittest.TestCase):
             target=coordinator.accept_connections_until_all_work_done)
         self.coordinator_thread.start()
         print("Coordinator server thread started")
-        
+
     def tearDown(self):
         self.coordinator_thread.join()
 
@@ -31,7 +32,7 @@ class TestCoordinator(unittest.TestCase):
         Connects to the Coordinator server and sends the specified request to
         it. Returns the response from the server.
         """
-        
+
         connection_socket = socket(AF_INET, SOCK_STREAM)
         connection_socket.connect(('localhost', self.port))
         connection_socket.send(request.serialize().encode())
@@ -67,11 +68,12 @@ class TestCoordinator(unittest.TestCase):
                 work_complete_request = WorkCompleteRequest(path, word_counts)
                 work_complete_response = self.send_request(
                     work_complete_request)
-                self.assertIsInstance(work_complete_response, 
+                self.assertIsInstance(work_complete_response,
                                       WorkCompleteResponse)
                 started_paths.remove(path)
                 finished_paths.add(path)
         self.assertTrue(all_work_complete)
 
+
 if __name__ == '__main__':
-    unittest.main()    
+    unittest.main()
