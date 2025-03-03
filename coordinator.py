@@ -29,23 +29,29 @@ class WorkTracker():
         self.play_ids.append(1526)  # Twelfth Night
         self.play_ids.append(1515)  # Merchant of Venice
 
-        # A dictionary that maintains the aggregate word frequecies across the
-        # plays analyzed by Volunteers.
-        # key: word, value: count.
         self.word_counts = dict()
+        '''
+        A dictionary that maintains the aggregate word frequecies across the
+        plays analyzed by Volunteers.
+        key: word, value: count.
+        '''
 
-        # Paths of plays that have not been assigned to any Volunteers yet.
         self.unstarted_paths = set()
+        '''Paths of plays that have not been assigned to any Volunteers yet.'''
         for i in self.play_ids:
             self.unstarted_paths.add("/cache/epub/%s/pg%s.txt" % (i, i))
         
-        # Paths of plays that have been assigned to Volunteers but they haven't
-        # yet reported results for them yet.
         self.started_paths = set()
+        '''
+        Paths of plays that have been assigned to Volunteers but they haven't
+        yet reported results for them yet.
+        '''
 
-        # Paths of plays that have been analyzed by Volunteers and the reported
-        # results have been assimilated by the Coordinator.
         self.finished_paths = set()
+        '''
+        Paths of plays that have been analyzed by Volunteers and the reported
+        results have been assimilated by the Coordinator.
+        '''
     
     def get_path_for_volunteer(self) -> str:
         """
