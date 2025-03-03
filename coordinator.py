@@ -2,20 +2,10 @@ from messages import *
 import random
 from socket import *
 
-# TODO: copy over messages.py and messages_test.py from milestone 1 into the 
-# same folder as your milestone 2 code. If you weren't satisfied with your
-# solution, reach out to Vishesh for his solution to milestone 1, which you are
-# welcome to use for misletone 2 onward.
-
 # TODO: address all the TODOs in this file (and delete each addressed TODO).
-
-# TODO: test your coordinator implementation by running coordinator_test.py.
-# You're welcome to add more tests there, but it's not required.
 
 # This class is fully implemented for you and you should not need to make any
 # modifications to it.
-# TODO: read the docstring of each method to understand how to use an instance
-# of WorkTracker in your coordinator code.
 class WorkTracker():
     """
     A class that tracks the status of plays to download and analyze. This is
