@@ -1,11 +1,6 @@
-# coordinator.py
-import time
-
 from messages import *
 import random
 from socket import *
-
-# TODO: address all the TODOs in this file (and delete each addressed TODO).
 
 # This class is fully implemented for you and you should not need to make any
 # modifications to it.
@@ -127,8 +122,10 @@ class Coordinator:
 
         self.work_tracker = WorkTracker()
 
-        # Create server socket that speaks TCP (transport) and IPv4 (network)
         self.server_socket = socket(family=AF_INET, type=SOCK_STREAM)
+        """
+        Server socket that speaks TCP (transport) and IPv4 (network)
+        """
 
     def start(self, port: int) -> int:
         """
@@ -136,11 +133,6 @@ class Coordinator:
         port is 0 then picks an unused port. Returns the port that the server
         is listening on.
         """
-
-        # TODO: implement this method following the docstring specification.
-        # Use IPv4 network and TCP transport.
-        # Hint: in the case of picking an unused port, you can use the
-        # getsockname() method on a socket to get the port.
 
         # Bind to a specific port
         self.server_socket.bind(('', port))
@@ -150,7 +142,6 @@ class Coordinator:
         self.server_socket.listen(backlog)
 
         self.server_socket.settimeout(1.0)
-
         return self.server_socket.getsockname()[1]
 
     def accept_connections_until_all_work_done(self):
@@ -160,11 +151,6 @@ class Coordinator:
         aggregated result and shuts down the server. This method blocks until
         there's no more work to do.
         """
-
-        # TODO: implement this method following the docstring specification.
-        # Hint: you may find it convenient to use the socket.makefile('rw')
-        # method to get a read-write file object for the connection. For example
-        # the file object can be passed to the Message.deserialize() method.
 
         try:
             while True:
@@ -180,9 +166,8 @@ class Coordinator:
                         self.work_tracker.process_result(request.path, request.word_counts)
                         resp = WorkCompleteResponse()
                     else:
-                        resp = None
-                    if resp:
-                        file.write(resp.serialize() + "\n")
+                        continue
+                    file.write(resp.serialize())
 
                 connection_socket.close()
         except TimeoutError:
