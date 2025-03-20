@@ -1,4 +1,3 @@
-# volunteer.py
 from messages import *
 from socket import *
 import ssl
@@ -18,27 +17,33 @@ class Volunteer:
         self.coordinator_host = coordinator_host
         self.coordinator_port = coordinator_port
 
-    def connect(self) -> socket:
+    def connect(self) -> socket|None:
         """
         Connects to the Coordinator using TCP on IPv4 and returns the connection
         socket.
         """
 
         sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect((self.coordinator_host, self.coordinator_port))
+        try:
+            sock.connect((self.coordinator_host, self.coordinator_port))
+        except ConnectionRefusedError:
+            sock.close()
+            return None
         return sock
     
-    def get_work(self) -> GetWorkResponse:
+    def get_work(self) -> GetWorkResponse|None:
         """
         Connects to the Coordinator, asks for work, and returns the response.
         """
-
         sock = self.connect()
-        with sock.makefile('rw') as file:
-            file.write(GetWorkRequest().serialize())
-            resp = Message.deserialize(file)
+        if not sock:
+            return None
+        sock.send(GetWorkRequest().serialize().encode())
+        with sock.makefile('r') as response_file:
+            response = Message.deserialize(response_file)
+
         sock.close()
-        return resp if isinstance(resp, GetWorkResponse) else None
+        return response
 
     
     def do_work(self, get_work_response: GetWorkResponse) -> dict:
@@ -78,18 +83,21 @@ class Volunteer:
         print(sorted_words)
         return sorted_words
     
-    def report_work(self, path: str, result: dict) -> WorkCompleteResponse:
+    def report_work(self, path: str, result: dict) -> WorkCompleteResponse|None:
         """
         Connects to the Coordinator and reports the results of a previously
         completed analysis of a play.
         """
 
         sock = self.connect()
-        with sock.makefile('rw') as file:
-            file.write(WorkCompleteRequest(path, result).serialize())
-            resp = Message.deserialize(file)
+        if not sock:
+            return None
+        sock.send(WorkCompleteRequest(path, result).serialize().encode())
+        with sock.makefile('r') as response_file:
+            response = Message.deserialize(response_file)
+
         sock.close()
-        return resp
+        return response
 
     def keep_working_until_done(self):
         """
@@ -98,15 +106,15 @@ class Volunteer:
         work or there's an error talking to the Coordinator.
         """
         
-        try:
-            while True:
-                work = self.get_work()
-                if work is None or work.host == '' or work.path == '':
-                    break
-                result = self.do_work(work)
-                self.report_work(work.path, result)
-        finally:
-            pass
+
+        while True:
+            work = self.get_work()
+            if not isinstance(work, GetWorkResponse) or work.host == '' or work.path == '':
+                break
+            result = self.do_work(work)
+            if not self.report_work(work.path, result):
+                break
+
     
 if __name__ == '__main__':
     volunteer = Volunteer('localhost', 5791)
