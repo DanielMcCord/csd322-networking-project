@@ -1,7 +1,9 @@
+# coordinator.py
+import time
+
 from messages import *
 import random
 from socket import *
-
 
 # TODO: address all the TODOs in this file (and delete each addressed TODO).
 
@@ -125,6 +127,9 @@ class Coordinator:
 
         self.work_tracker = WorkTracker()
 
+        # Create server socket that speaks TCP (transport) and IPv4 (network)
+        self.server_socket = socket(family=AF_INET, type=SOCK_STREAM)
+
     def start(self, port: int) -> int:
         """
         Starts the coordinator server on the specified port. If the specified
@@ -136,7 +141,17 @@ class Coordinator:
         # Use IPv4 network and TCP transport.
         # Hint: in the case of picking an unused port, you can use the
         # getsockname() method on a socket to get the port.
-        raise NotImplementedError
+
+        # Bind to a specific port
+        self.server_socket.bind(('', port))
+
+        # Listen for client knocking.
+        backlog = 10
+        self.server_socket.listen(backlog)
+
+        self.server_socket.settimeout(1.0)
+
+        return self.server_socket.getsockname()[1]
 
     def accept_connections_until_all_work_done(self):
         """
@@ -150,7 +165,31 @@ class Coordinator:
         # Hint: you may find it convenient to use the socket.makefile('rw')
         # method to get a read-write file object for the connection. For example
         # the file object can be passed to the Message.deserialize() method.
-        raise NotImplementedError
+
+        try:
+            while True:
+                connection_socket, addr = self.server_socket.accept()
+                with connection_socket.makefile('rw') as file:
+                    request = Message.deserialize(file)
+                    if isinstance(request, GetWorkRequest):
+                        if self.work_tracker.is_all_work_done():
+                            resp = GetWorkResponse('', '')
+                        else:
+                            resp = GetWorkResponse(self.work_tracker.play_download_host, self.work_tracker.get_path_for_volunteer())
+                    elif isinstance(request, WorkCompleteRequest):
+                        self.work_tracker.process_result(request.path, request.word_counts)
+                        resp = WorkCompleteResponse()
+                    else:
+                        resp = None
+                    if resp:
+                        file.write(resp.serialize() + "\n")
+
+                connection_socket.close()
+        except TimeoutError:
+            pass
+
+        self.server_socket.close()
+        print(self.work_tracker.get_word_counts_desc())
 
 
 if __name__ == '__main__':
