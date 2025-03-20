@@ -1,19 +1,9 @@
+# volunteer.py
 from messages import *
 from socket import *
 import ssl
 
-# TODO: copy over messages.py, messages_test.py, coordinator.py, and 
-# coordinator_test.py (from milestones 1 & 2) into the same folder as your
-# milestone 3 code. If you weren't satisfied with your solutions to the previous
-# milestones, reach out to Vishesh for his solutions, which you are welcome to
-# use for misletone 3.
-
-# TODO: address all the TODOs in this file (and delete each addressed TODO).
-
-# TODO: test your volunteer.py implementation by running volunteer_test.py.
-# You're welcome to add more tests there, but it's not required.
-
-class Volunteer():
+class Volunteer:
     """
     A class that repeatedly asks for work from the Coordinator, performs the
     work, and then reports the results to the Coordinator.
@@ -34,14 +24,21 @@ class Volunteer():
         socket.
         """
 
-        # TODO: implement
+        sock = socket(AF_INET, SOCK_STREAM)
+        sock.connect((self.coordinator_host, self.coordinator_port))
+        return sock
     
     def get_work(self) -> GetWorkResponse:
         """
         Connects to the Coordinator, asks for work, and returns the response.
         """
 
-        # TODO: implement
+        sock = self.connect()
+        with sock.makefile('rw') as file:
+            file.write(GetWorkRequest().serialize())
+            resp = Message.deserialize(file)
+        sock.close()
+        return resp if isinstance(resp, GetWorkResponse) else None
 
     
     def do_work(self, get_work_response: GetWorkResponse) -> dict:
@@ -87,16 +84,29 @@ class Volunteer():
         completed analysis of a play.
         """
 
-        # TODO: implement
+        sock = self.connect()
+        with sock.makefile('rw') as file:
+            file.write(WorkCompleteRequest(path, result).serialize())
+            resp = Message.deserialize(file)
+        sock.close()
+        return resp
 
     def keep_working_until_done(self):
         """
         Repeatedly asks for work from the Coordinator, performs the work, and
-        reports the results. Continues unit the Coordinator responds with no
+        reports the results. Continues until the Coordinator responds with no
         work or there's an error talking to the Coordinator.
         """
         
-        # TODO: implement
+        try:
+            while True:
+                work = self.get_work()
+                if work is None or work.host == '' or work.path == '':
+                    break
+                result = self.do_work(work)
+                self.report_work(work.path, result)
+        finally:
+            pass
     
 if __name__ == '__main__':
     volunteer = Volunteer('localhost', 5791)
