@@ -141,7 +141,7 @@ class Coordinator:
         backlog = 10
         self.server_socket.listen(backlog)
 
-        self.server_socket.settimeout(1.0)
+        self.server_socket.settimeout(.5)
         return self.server_socket.getsockname()[1]
 
     def accept_connections_until_all_work_done(self):
